@@ -1,8 +1,9 @@
 from app.main import app
 from app.config import settings
-from app.database.models import Base, User
-from app.database.database import get_db
 from app.utils import password_functions
+from app.database.database import get_db
+from app.database.models import Base, User, Question
+from app.utils.token_functions import create_access_token
 import pytest
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker
@@ -35,7 +36,7 @@ def client(session):
 
 
 @pytest.fixture
-def test_user(session) -> dict:
+def test_user_1(session) -> dict:
     user = User(
         email = "testemail@gmail.com",
         password = password_functions.hash_password("123456789"),
@@ -44,4 +45,49 @@ def test_user(session) -> dict:
     )
     session.add(user)
     session.commit()
-    return {"email": user.email, "password": "123456789", "username": user.username, "bio": user.bio}
+    session.refresh(user)
+    return {"email": user.email, "password": "123456789", "username": user.username, "bio": user.bio, "userId": user.userId}
+
+@pytest.fixture
+def test_user_2(session) -> dict:
+    user = User(
+        email = "testemail2@gmail.com",
+        password = password_functions.hash_password("123456789"),
+        username = "test_user_2",
+        bio = "test_2"
+    )
+    session.add(user)
+    session.commit()
+    session.refresh(user)
+    return {"email": user.email, "password": "123456789", "username": user.username, "bio": user.bio, "userId": user.userId}
+
+@pytest.fixture
+def authorized_client_1(client, test_user_1):
+    token = create_access_token({'id': test_user_1['userId']})
+    client.headers = {
+        **client.headers,
+        'Authorization': f'Bearer {token}'
+    }
+    return client
+
+@pytest.fixture
+def authorized_client_2(client, test_user_2):
+    token = create_access_token({'id': test_user_2['userId']})
+    client.headers = {
+        **client.headers,
+        'Authorization': f'Bearer {token}'
+    }
+    return client
+
+@pytest.fixture
+def create_test_questions(session, test_user_1):
+    data = [
+        {'question': 'test question 1', 'userId': test_user_1['userId']},
+        {'question': 'test question 2', 'userId': test_user_1['userId']}
+    ]
+    def create_question_model(question: dict):
+        return Question(**question)
+    questions = list(map(create_question_model, data))
+    session.add_all(questions)
+    session.commit()
+    return questions
