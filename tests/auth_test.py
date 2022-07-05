@@ -20,14 +20,14 @@ def test_register_fail_invalid_json(email, username, password, bio, client):
     )
     assert res.status_code == 422
 
-def test_register_fail_user_exists(client, test_user):
+def test_register_fail_user_exists(client, test_user_1):
     res = client.post(
         '/auth/register',
         json={
-            "email": test_user["email"],
-            "username": test_user["username"],
-            "password": test_user["password"],
-            "bio": test_user["bio"]
+            "email": test_user_1["email"],
+            "username": test_user_1["username"],
+            "password": test_user_1["password"],
+            "bio": test_user_1["bio"]
         })
     assert res.status_code == 403
 
@@ -50,7 +50,7 @@ def test_register_success(client, session):
         (None, "123456789"),
         ("testemail", "123456789")
     ])
-def test_login_fail_invalid_json(email, password, client, test_user):
+def test_login_fail_invalid_json(email, password, client, test_user_1):
     res = client.post(
         '/auth/login',
         json={"email": email, "password": password}
@@ -63,17 +63,17 @@ def test_login_fail_invalid_json(email, password, client, test_user):
         ("testemail@gmail.com", "wrong password"),
         ("wrongemail@gmail.com", "wrong password")
     ])
-def test_login_fail_invalid_credentials(email, password, client, test_user):
+def test_login_fail_invalid_credentials(email, password, client, test_user_1):
     res = client.post(
         '/auth/login',
         json={"email": email, "password": password}
     )
     assert res.status_code == 404
 
-def test_login_success(client, session, test_user):
+def test_login_success(client, session, test_user_1):
     res = client.post(
         '/auth/login',
-        json={"email": test_user["email"], "password": test_user["password"]}
+        json={"email": test_user_1["email"], "password": test_user_1["password"]}
     )
     assert res.status_code == 200
     response = schemas.Token(**res.json())
