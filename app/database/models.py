@@ -24,3 +24,14 @@ class Question(Base):
     createTime = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
     lastUpdated = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
     edited = Column(Boolean, nullable=False, server_default='False')
+
+class Answer(Base):
+    __tablename__ = 'answers'
+
+    answerId = Column(Integer, nullable=False, primary_key=True)
+    questionId = Column(Integer, ForeignKey('questions.questionId', ondelete='CASCADE'), nullable=False)
+    answer = Column(String, nullable=False)
+    userId = Column(Integer, ForeignKey('users.userId', ondelete='CASCADE'), nullable=False)
+    createTime = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
+    lastUpdated = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
+    edited = Column(Boolean, nullable=False, server_default='False')
