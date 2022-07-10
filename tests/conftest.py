@@ -2,7 +2,7 @@ from app.main import app
 from app.config import settings
 from app.utils import password_functions
 from app.database.database import get_db
-from app.database.models import Base, User, Question
+from app.database.models import Base, User, Question, Answer
 from app.utils.token_functions import create_access_token
 import pytest
 from sqlalchemy import create_engine
@@ -91,3 +91,20 @@ def create_test_questions(session, test_user_1):
     session.add_all(questions)
     session.commit()
     return questions
+
+@pytest.fixture
+def create_test_answers(session, test_user_1, create_test_questions) -> list[Answer]:
+    questions: list[Question] = session.query(Question).all()
+    answers = []
+    for question in questions:
+        data: dict = {
+            'answer': f"test_answer_by_{test_user_1['userId']}",
+            'userId': test_user_1['userId'],
+            'questionId': question.questionId
+        }
+        new_answer = Answer(**data)
+        session.add(new_answer)
+        session.commit()
+        session.refresh(new_answer)
+        answers.append(new_answer)
+    return answers
