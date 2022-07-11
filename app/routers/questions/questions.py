@@ -11,7 +11,7 @@ router = APIRouter(prefix='/question', tags=['Questions'])
 
 @router.get(
     '/id/{questionId}',
-    response_model=schemas.QuestionResponse)
+    response_model=schemas.QuestionWithAnswersResponse)
 def get_question_by_id(
     questionId: int,
     db: Session = Depends(database.get_db),
@@ -19,7 +19,13 @@ def get_question_by_id(
     query = db.query(models.Question).filter(models.Question.questionId == questionId)
     question = query.first()
     if question != None:
-        return question
+        answers: list[models.Answer] = db.query(models.Answer).filter(models.Answer.questionId == questionId).all()
+        data: dict = question.__dict__
+        answers_dict: list[dict] = []
+        for answer in answers:
+            answers_dict.append(answer.__dict__)
+        data['answers'] = answers_dict
+        return data
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
         detail=f"Question with id {questionId} not found")

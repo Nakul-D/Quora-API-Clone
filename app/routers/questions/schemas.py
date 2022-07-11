@@ -1,3 +1,4 @@
+from ..answers import schemas
 from datetime import datetime
 from pydantic import BaseModel
 
@@ -14,3 +15,6 @@ class QuestionResponse(BaseModel):
 
     class Config:
         orm_mode = True
+
+class QuestionWithAnswersResponse(QuestionResponse):
+    answers: list[schemas.AnswerResponse]
