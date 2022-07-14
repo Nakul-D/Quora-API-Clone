@@ -17,3 +17,8 @@ class AnswerResponse(BaseModel):
 
     class Config:
         orm_mode = True
+
+class AnswerResponseWithVotes(AnswerResponse):
+    upVotes: int
+    downVotes: int
+    currentUserUpVoted: bool | None

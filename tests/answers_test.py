@@ -1,5 +1,5 @@
 import pytest
-from app.database.models import Answer
+from app.routers.answers.schemas import AnswerResponse, AnswerResponseWithVotes
 
 
 def test_get_answer_by_id_authorization_fail(client, create_test_answers):
@@ -10,14 +10,17 @@ def test_get_answer_by_id_fail_not_exists(authorized_client_1, create_test_answe
     res = authorized_client_1.get('/answer/id/1000')
     assert res.status_code == 404
 
-def test_get_answer_by_id(authorized_client_1, create_test_answers):
+def test_get_answer_by_id(authorized_client_1, create_test_answers, create_test_vote):
     res = authorized_client_1.get(f"/answer/id/{create_test_answers[0].answerId}")
     assert res.status_code == 200
-    answer = Answer(**res.json())
+    answer = AnswerResponseWithVotes(**res.json())
     assert answer.userId == create_test_answers[0].userId
     assert answer.answerId == create_test_answers[0].answerId
     assert answer.answer == create_test_answers[0].answer
     assert answer.questionId == create_test_answers[0].questionId
+    assert answer.upVotes == 1
+    assert answer.downVotes == 0
+    assert answer.currentUserUpVoted == True
 
 def test_post_answer_authorization_fail(client, create_test_questions):
     res = client.post(
@@ -51,7 +54,7 @@ def test_post_answer(test_user_1, authorized_client_1, create_test_questions):
         f"/answer/post/{questionId}",
         json={'answer': 'test answer'})
     assert res.status_code == 201
-    answer = Answer(**res.json())
+    answer = AnswerResponse(**res.json())
     assert answer.userId == test_user_1['userId']
     assert answer.questionId == questionId
     assert answer.answer == 'test answer'
@@ -87,7 +90,7 @@ def test_update_answer(test_user_1, authorized_client_1, create_test_answers):
         f"answer/update/{create_test_answers[0].answerId}",
         json={'answer': 'updated_answer'})
     assert res.status_code == 200
-    answer = Answer(**res.json())
+    answer = AnswerResponse(**res.json())
     assert answer.userId == test_user_1['userId']
     assert answer.questionId == create_test_answers[0].questionId
     assert answer.answer == 'updated_answer'
