@@ -10,7 +10,7 @@ def test_get_question_by_id_not_exists(authorized_client_1):
     res = authorized_client_1.get('/question/id/1000')
     assert res.status_code == 404
 
-def test_get_question_by_id_success(authorized_client_1, create_test_questions, create_test_answers):
+def test_get_question_by_id_success(authorized_client_1, create_test_questions, create_test_answers, create_test_vote):
     question = create_test_questions[0]
     res = authorized_client_1.get(f'/question/id/{question.questionId}')
     assert res.status_code == 200
@@ -20,6 +20,9 @@ def test_get_question_by_id_success(authorized_client_1, create_test_questions, 
     assert question.questionId == question.questionId
     assert type(question.answers) == list
     assert question.answers[0].questionId == question.questionId
+    assert question.answers[0].upVotes == 1
+    assert question.answers[0].downVotes == 0
+    assert question.answers[0].currentUserUpVoted == True
 
 def test_get_question_by_search_authorization_fail(client):
     res = client.get('/question/search?keyword=test&limit=1')

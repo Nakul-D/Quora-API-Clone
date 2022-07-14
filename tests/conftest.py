@@ -2,7 +2,7 @@ from app.main import app
 from app.config import settings
 from app.utils import password_functions
 from app.database.database import get_db
-from app.database.models import Base, User, Question, Answer
+from app.database.models import Base, User, Question, Answer, Votes
 from app.utils.token_functions import create_access_token
 import pytest
 from sqlalchemy import create_engine
@@ -108,3 +108,16 @@ def create_test_answers(session, test_user_1, create_test_questions) -> list[Ans
         session.refresh(new_answer)
         answers.append(new_answer)
     return answers
+
+@pytest.fixture
+def create_test_vote(session, test_user_1, create_test_answers) -> Votes:
+    data: dict = {
+        'answerId': create_test_answers[0].answerId,
+        'userId': test_user_1['userId'],
+        'vote': True,
+    }
+    new_vote = Votes(**data)
+    session.add(new_vote)
+    session.commit()
+    session.refresh(new_vote)
+    return new_vote

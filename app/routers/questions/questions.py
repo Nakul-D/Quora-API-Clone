@@ -23,7 +23,22 @@ def get_question_by_id(
         data: dict = question.__dict__
         answers_dict: list[dict] = []
         for answer in answers:
-            answers_dict.append(answer.__dict__)
+            votes: list[models.Votes] = db.query(models.Votes).filter(models.Votes.answerId == answer.answerId).all()
+            upVotes: int = 0
+            downVotes: int = 0
+            currentUsersVote = None
+            for vote in votes:
+                if vote.userId == user.userId:
+                    currentUsersVote = vote.vote
+                if vote.vote == True:
+                    upVotes += 1
+                else:
+                    downVotes += 1
+            answerWithVotes = answer.__dict__
+            answerWithVotes['upVotes'] = upVotes
+            answerWithVotes['downVotes'] = downVotes
+            answerWithVotes['currentUserUpVoted'] = currentUsersVote
+            answers_dict.append(answerWithVotes)
         data['answers'] = answers_dict
         return data
     raise HTTPException(

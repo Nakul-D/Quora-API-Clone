@@ -10,14 +10,29 @@ router = APIRouter(prefix='/answer', tags=['Answers'])
 
 @router.get(
     '/id/{answerId}',
-    response_model=schemas.AnswerResponse)
+    response_model=schemas.AnswerResponseWithVotes)
 def get_answer_by_id(
     answerId: int,
     db: Session = Depends(database.get_db),
     user: models.User = Depends(token_functions.get_current_user)):
     answer = db.query(models.Answer).filter(models.Answer.answerId == answerId).first()
     if answer != None:
-        return answer
+        votes: list[models.Votes] = db.query(models.Votes).filter(models.Votes.answerId == answerId).all()
+        upVotes: int = 0
+        downVotes: int = 0
+        currentUsersVote = None
+        for vote in votes:
+            if vote.userId == user.userId:
+                currentUsersVote = vote.vote
+            if vote.vote == True:
+                upVotes += 1
+            else:
+                downVotes += 1
+        data: dict = answer.__dict__
+        data['upVotes'] = upVotes
+        data['downVotes'] = downVotes
+        data['currentUserUpVoted'] = currentUsersVote
+        return data
     raise HTTPException(
         status_code=status.HTTP_404_NOT_FOUND,
         detail=f"Answer with id {answerId} does not exist")

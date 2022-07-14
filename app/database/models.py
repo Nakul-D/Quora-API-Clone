@@ -35,3 +35,13 @@ class Answer(Base):
     createTime = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
     lastUpdated = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
     edited = Column(Boolean, nullable=False, server_default='False')
+
+class Votes(Base):
+    __tablename__ = 'votes'
+
+    answerId = Column(Integer, ForeignKey('answers.answerId', ondelete='CASCADE'), nullable=False, primary_key=True)
+    userId = Column(Integer, ForeignKey('users.userId', ondelete='CASCADE'), nullable=False, primary_key=True)
+    vote = Column(Boolean, nullable=False)
+    createTime = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
+    lastUpdated = Column(TIMESTAMP(timezone=True), nullable=False, server_default=text('now()'))
+    edited = Column(Boolean, nullable=False, server_default='False')

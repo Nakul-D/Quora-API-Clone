@@ -17,4 +17,4 @@ class QuestionResponse(BaseModel):
         orm_mode = True
 
 class QuestionWithAnswersResponse(QuestionResponse):
-    answers: list[schemas.AnswerResponse]
+    answers: list[schemas.AnswerResponseWithVotes]
